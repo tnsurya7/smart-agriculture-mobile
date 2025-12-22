@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Smart Agriculture Mobile",
+    "slug": "smart-agriculture-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.smartagriculture.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F172A"
+      },
+      "package": "com.smartagriculture.mobile"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "smart-agriculture-mobile",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "47863d6d-a0b3-47a9-9046-34a1c0b93cd6"
+      }
+    }
+  }
+}
