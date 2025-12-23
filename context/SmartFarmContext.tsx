@@ -28,56 +28,28 @@ const SmartFarmContext = createContext<SmartFarmContextType | undefined>(undefin
 export function SmartFarmProvider({ children }: { children: React.ReactNode }) {
     const [connection, setConnection] = useState<ConnectionStatus>("disconnected");
     const [data, setData] = useState<SensorData>({
-        // Demo data for UI testing when backend is not available
-        soil: 45.2,
-        temperature: 28.5,
-        humidity: 65.3,
-        rainRaw: 3200,
+        // Initialize with zero values - will show real data only when sensors are connected
+        soil: 0,
+        temperature: 0,
+        humidity: 0,
+        rainRaw: 0,
         rainDetected: false,
-        ldr: 2800,
-        lightPercent: 75.4,
-        lightStatus: "Normal Light",
-        flow: 2.3,
-        totalLiters: 145.7,
+        ldr: 0,
+        lightPercent: 0,
+        lightStatus: "No Data",
+        flow: 0,
+        totalLiters: 0,
         pump: 0,
         mode: "AUTO",
         rainExpected: false,
     });
 
-    const [hasLiveData, setHasLiveData] = useState(true);
-    const [history, setHistory] = useState<SensorData[]>([
-        { soil: 42.1, temperature: 27.8, humidity: 68.2, rainRaw: 3100, rainDetected: false, ldr: 2600, lightPercent: 72.1, lightStatus: "Normal Light", flow: 2.1, totalLiters: 140.2, pump: 0, mode: "AUTO", rainExpected: false },
-        { soil: 43.5, temperature: 28.2, humidity: 66.8, rainRaw: 3150, rainDetected: false, ldr: 2700, lightPercent: 73.5, lightStatus: "Normal Light", flow: 2.2, totalLiters: 142.4, pump: 0, mode: "AUTO", rainExpected: false },
-        { soil: 44.8, temperature: 28.7, humidity: 65.9, rainRaw: 3180, rainDetected: false, ldr: 2750, lightPercent: 74.2, lightStatus: "Normal Light", flow: 2.3, totalLiters: 143.8, pump: 0, mode: "AUTO", rainExpected: false },
-        { soil: 45.2, temperature: 28.5, humidity: 65.3, rainRaw: 3200, rainDetected: false, ldr: 2800, lightPercent: 75.4, lightStatus: "Normal Light", flow: 2.3, totalLiters: 145.7, pump: 0, mode: "AUTO", rainExpected: false },
-    ]);
-    const [modelReport, setModelReport] = useState<ModelReport | null>({
-        arima_rmse: 3.45,
-        arimax_rmse: 1.78,
-        arima_mape: 0.175,
-        arimax_mape: 0.054,
-        arima_accuracy: 82.5,
-        arimax_accuracy: 94.6,
-        best_model: 'ARIMAX',
-        rows: 2847,
-    });
-    const [weatherData, setWeatherData] = useState<WeatherData | null>({
-        temperature: 29.2,
-        humidity: 68,
-        rain_probability: 25,
-        rain_expected: false,
-        forecast_window: "Next 24 hours",
-        location: "Erode, Tamil Nadu",
-        last_updated: new Date().toLocaleTimeString()
-    });
-    const [systemStatus, setSystemStatus] = useState<SystemStatus | null>({
-        total_rows: 2847,
-        last_retrain: "2024-12-21 14:30:00",
-        next_retrain: "2024-12-22 02:00:00",
-        sensor_connectivity: true,
-        data_logging_active: true
-    });
-    const [predictedSoil, setPredictedSoil] = useState<number | null>(47.8);
+    const [hasLiveData, setHasLiveData] = useState(false); // Start with false - no data until connected
+    const [history, setHistory] = useState<SensorData[]>([]); // Empty history until real data arrives
+    const [modelReport, setModelReport] = useState<ModelReport | null>(null); // Null until loaded from API
+    const [weatherData, setWeatherData] = useState<WeatherData | null>(null); // Null until loaded from API
+    const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null); // Null until loaded from API
+    const [predictedSoil, setPredictedSoil] = useState<number | null>(null); // Null until prediction available
     const lastPumpState = useRef<"ON" | "OFF" | null>(null);
     const lastPumpTime = useRef<number>(0);
 
@@ -125,15 +97,7 @@ export function SmartFarmProvider({ children }: { children: React.ReactNode }) {
         return () => clearInterval(interval);
     }, []);
 
-    // Simulate ML prediction
-    useEffect(() => {
-        if (!hasLiveData) {
-            const timer = setTimeout(() => {
-                setPredictedSoil(45.2);
-            }, 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [hasLiveData]);
+    // ML predictions will only show when real data is available from the backend API
 
     const sendPump = (value: "ON" | "OFF") => {
         const now = Date.now();

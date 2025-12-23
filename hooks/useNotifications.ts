@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import {
     initializePushNotifications,
@@ -44,6 +45,19 @@ export function usePushNotifications() {
                 if (token) {
                     setExpoPushToken(token);
                     setIsRegistered(true);
+
+                    // Show alert with token for easy copying
+                    Alert.alert(
+                        '✅ Push Token Generated',
+                        `Your Expo Push Token:\n\n${token}\n\nThis token is needed to send push notifications.`,
+                        [
+                            {
+                                text: 'Copy to Console',
+                                onPress: () => console.log('📋 EXPO PUSH TOKEN:', token)
+                            },
+                            { text: 'OK' }
+                        ]
+                    );
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to initialize notifications');

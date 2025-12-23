@@ -133,14 +133,15 @@ export async function registerPushTokenWithBackend(token: string): Promise<boole
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            console.warn(`⚠️ Backend returned HTTP ${response.status} - push token not registered (backend may be sleeping)`);
+            return false;
         }
 
         const result = await response.json();
         console.log('✅ Push token registered with backend:', result);
         return true;
     } catch (error) {
-        console.error('Failed to register push token with backend:', error);
+        console.warn('⚠️ Could not register push token with backend (this is OK for testing):', error.message);
         return false;
     }
 }

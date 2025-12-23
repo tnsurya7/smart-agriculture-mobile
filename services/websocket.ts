@@ -4,6 +4,7 @@
  */
 
 import { SensorData } from '../types';
+import Constants from 'expo-constants';
 
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting';
 
@@ -26,8 +27,9 @@ export class SmartFarmWebSocket {
   public onError: ((error: string) => void) | null = null;
 
   constructor(url?: string) {
-    // Use environment variable or fallback to localhost
-    this.url = url || process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:8080/ws';
+    // Get WebSocket URL from app config (embedded at build time)
+    const configUrl = Constants.expoConfig?.extra?.wsUrl;
+    this.url = url || configUrl || 'wss://smart-agriculture-backend-my7c.onrender.com/ws';
     console.log('🔌 WebSocket initialized with URL:', this.url);
   }
 
@@ -256,7 +258,7 @@ export class SmartFarmWebSocket {
     let delay = this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1);
     if (delay > 30000) delay = 30000;
 
-    console.log(`🔄 Scheduling reconnect attempt ${this.reconnectAttempts} in ${delay}ms`);
+    console.log(`🔄 Scheduling reconnect attempt ${this.reconnectAttempts} in ${delay} ms`);
 
     // Clear any existing timeout
     if (this.reconnectInterval) {

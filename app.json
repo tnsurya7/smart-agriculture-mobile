@@ -39,7 +39,9 @@
       "router": {},
       "eas": {
         "projectId": "47863d6d-a0b3-47a9-9046-34a1c0b93cd6"
-      }
+      },
+      "apiUrl": "https://smart-agriculture-backend-my7c.onrender.com",
+      "wsUrl": "wss://smart-agriculture-backend-my7c.onrender.com/ws"
     }
   }
 }
