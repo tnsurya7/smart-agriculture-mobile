@@ -1,15 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSmartFarm } from '../../context/SmartFarmContext';
-import { usePushNotifications } from '../../hooks/useNotifications';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 
 // Simple in-app console for viewing logs
 export default function DebugScreen() {
     const { connection, data, isConnected } = useSmartFarm();
-    const { expoPushToken, isRegistered, permissionStatus } = usePushNotifications();
     const [logs, setLogs] = useState<string[]>([]);
+    const [pushToken, setPushToken] = useState<string>('Generating...');
+    const [notificationStatus, setNotificationStatus] = useState<string>('Checking...');
+    const [permissionStatus, setPermissionStatus] = useState<string>('Checking...');
+
+    // Get push token directly
+    useEffect(() => {
+        async function getPushToken() {
+            try {
+                if (!Device.isDevice) {
+                    setPushToken('Not available (emulator)');
+                    setNotificationStatus('NOT AVAILABLE');
+                    return;
+                }
+
+                const { status: existingStatus } = await Notifications.getPermissionsAsync();
+                setPermissionStatus(existingStatus);
+
+                let finalStatus = existingStatus;
+                if (existingStatus !== 'granted') {
+                    const { status } = await Notifications.requestPermissionsAsync();
+                    finalStatus = status;
+                    setPermissionStatus(status);
+                }
+
+                if (finalStatus !== 'granted') {
+                    setPushToken('Permission denied');
+                    setNotificationStatus('NOT REGISTERED');
+                    return;
+                }
+
+                const projectId = Constants?.expoConfig?.extra?.eas?.projectId;
+                if (!projectId) {
+                    setPushToken('Project ID not found');
+                    setNotificationStatus('ERROR');
+                    return;
+                }
+
+                const token = await Notifications.getExpoPushTokenAsync({ projectId });
+                setPushToken(token.data);
+                setNotificationStatus('REGISTERED');
+                console.log('📱 Expo Push Token:', token.data);
+            } catch (error) {
+                setPushToken(`Error: ${error.message}`);
+                setNotificationStatus('ERROR');
+                console.error('Push token error:', error);
+            }
+        }
+
+        getPushToken();
+    }, []);
 
     useEffect(() => {
         // Capture console.log
@@ -28,6 +79,17 @@ export default function DebugScreen() {
     }, []);
 
     const clearLogs = () => setLogs([]);
+
+    const copyToken = () => {
+        console.log('📋 FULL EXPO PUSH TOKEN:', pushToken);
+        Alert.alert(
+            '📋 Push Token',
+            pushToken,
+            [
+                { text: 'OK' }
+            ]
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -53,20 +115,22 @@ export default function DebugScreen() {
                 <View style={styles.statusRow}>
                     <Text style={styles.label}>Push Token:</Text>
                     <Text style={styles.value} numberOfLines={1}>
-                        {expoPushToken ? expoPushToken.substring(0, 30) + '...' : 'Not generated'}
+                        {pushToken.length > 30 ? pushToken.substring(0, 30) + '...' : pushToken}
                     </Text>
                 </View>
 
                 <View style={styles.statusRow}>
                     <Text style={styles.label}>Notifications:</Text>
-                    <Text style={[styles.value, { color: isRegistered ? '#4CAF50' : '#f44336' }]}>
-                        {isRegistered ? 'REGISTERED' : 'NOT REGISTERED'}
+                    <Text style={[styles.value, {
+                        color: notificationStatus === 'REGISTERED' ? '#4CAF50' : '#f44336'
+                    }]}>
+                        {notificationStatus}
                     </Text>
                 </View>
 
                 <View style={styles.statusRow}>
                     <Text style={styles.label}>Permission:</Text>
-                    <Text style={styles.value}>{permissionStatus || 'Unknown'}</Text>
+                    <Text style={styles.value}>{permissionStatus}</Text>
                 </View>
 
                 <View style={styles.statusRow}>
@@ -107,14 +171,8 @@ export default function DebugScreen() {
             </View>
 
             {/* Copy Token Button */}
-            {expoPushToken && (
-                <TouchableOpacity
-                    style={styles.copyButton}
-                    onPress={() => {
-                        console.log('📋 Full Expo Push Token:', expoPushToken);
-                        alert(`Token copied to logs:\n${expoPushToken}`);
-                    }}
-                >
+            {pushToken && pushToken.startsWith('ExponentPushToken') && (
+                <TouchableOpacity style={styles.copyButton} onPress={copyToken}>
                     <Ionicons name="copy-outline" size={20} color="#fff" />
                     <Text style={styles.copyText}>Show Full Push Token</Text>
                 </TouchableOpacity>
