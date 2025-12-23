@@ -285,6 +285,46 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="debug"
+        options={{
+          title: "Debug",
+          headerTitle: () => (
+            <HeaderWithIcon title="Debug Console" icon="bug" color="#f44336" />
+          ),
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: focused ? colors.glass.light : 'transparent',
+              marginTop: 4,
+            }}>
+              {focused && (
+                <LinearGradient
+                  colors={['#f44336', '#e91e63'] as any}
+                  style={{
+                    position: 'absolute',
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    opacity: 0.15,
+                  }}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                />
+              )}
+              <Ionicons
+                name={focused ? "bug" : "bug-outline"}
+                size={22}
+                color={focused ? '#f44336' : color}
+              />
+            </View>
+          ),
+        }}
+      />
     </Tabs>
   );
 }
