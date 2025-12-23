@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { SensorData, ModelReport, WeatherData, SystemStatus } from "../types";
 import { smartFarmWebSocket, ConnectionStatus } from "../services/websocket";
 import { getModelReport, getWeatherData, getSystemStatus } from "../services/api";
+import { initializePushNotifications } from "../services/notifications";
 
 type SmartFarmContextType = {
     data: SensorData;
@@ -97,6 +98,12 @@ export function SmartFarmProvider({ children }: { children: React.ReactNode }) {
         };
 
         smartFarmWebSocket.connect();
+
+        // Initialize push notifications
+        initializePushNotifications().catch(err => {
+            console.warn('Failed to initialize push notifications:', err);
+        });
+
         return () => smartFarmWebSocket.disconnect();
     }, []);
 
