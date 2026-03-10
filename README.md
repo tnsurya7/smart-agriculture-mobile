@@ -317,7 +317,6 @@ This project is part of an academic Smart Agriculture system.
 
 ---
 
-**Built with ❤️ for Smart Agriculture** 🌱🚜
 
 **Backend:** https://smart-agriculture-backend-my7c.onrender.com  
 **Documentation:** See `docs/` folder for detailed guides
